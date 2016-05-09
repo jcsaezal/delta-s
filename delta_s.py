@@ -43,7 +43,7 @@ def mean(numbers):
         val = val+ n
     return (val/len(numbers))    
 
-def scatter2DTrends(labeledPointsSched,markerSpecs,xlabel,ylabel,mode=0,figSize=[9.0,9.0],filename=None,windowTitle=None,legendLocation='best',axes_labelsize=None,label_offset=(37,5)):
+def scatter2DTrends(labeledPointsSched,xlabel,ylabel,figSize=[9.0,9.0],filename=None,windowTitle=None,legendLocation='best',axes_labelsize=None,label_offset=(37,5)):
     plt.rcParams["figure.figsize"]=figSize
     offsetx=label_offset[0]
     offsety=label_offset[1]
@@ -65,30 +65,13 @@ def scatter2DTrends(labeledPointsSched,markerSpecs,xlabel,ylabel,mode=0,figSize=
         (Labels,X,Y,Z)=buildArrays(schedPoints)
 
         ## Hack para reconocer el color
-        markerSpec=markerSpecs[sched]
-        if  len(markerSpec)>1:
-            extraArgs=dict(facecolor=markerSpec[1])
-        else:
-            extraArgs=dict()
-        if mode==0:
-            plt.plot(X, Y, markersize=10, marker=markerSpec[0],label=sched,linestyle='dashed')  #markerSpec[0])##'--o')
-            ## X vs Y
-            for x, y, note in zip(X,Y,Labels):
-                plt.annotate(
-                    note,
-                    xy = (x, y), xytext = (offsetx, offsety),
-                    textcoords = 'offset points', ha = 'right', va = 'bottom', color='black')
-        elif mode==1:
-            ## X vs Z
-            plt.plot(X, Z, markersize=10, marker=markerSpec[0],label=sched,linestyle='dashed')  #markerSpec[0])##'--o')
-            for x, y, note in zip(X,Z,Labels):
-                plt.annotate(
-                    note,
-                    xy = (x, y), xytext = (offsetx, offsety),
-                    textcoords = 'offset points', ha = 'right', va = 'bottom', color='black')
-        else:
-            print "Unsupported mode"
-            return 1
+        #markerSpec=markerSpecs[sched]
+        #if  len(markerSpec)>1:
+        #    extraArgs=dict(facecolor=markerSpec[1])
+        #else:
+        #    extraArgs=dict()
+        plt.plot(X, Y, markersize=10, linestyle='dashed')  #markerSpec[0])##'--o')
+
     plt.legend(loc=legendLocation) # scatterpoints=1)
     plt.grid(True)
     plt.draw()
@@ -184,4 +167,51 @@ results=[]
 for i in range(2,nfields+1):
     ret=delta_s(i,temps,fields,samples)
     results.append(ret)
+
+
+
+data={}
+
+for i in range(len(results)):
+    curve=results[i]
+    name=str(i)
+    data[name]=[]
+    for val in curve:
+        x=temps[i]
+        y=val
+        z=i ## Rango
+        data[name].append(LabeledPoint("nada",x,y,z))
+             
+# Formato: Lista de listas
+# en cada lista -> pos 0 es el tipo de marker
+# TipoDeMarker: caracter o tupla (numsides, style, angle)
+#  http://matplotlib.org/1.4.1/api/markers_api.html#module-matplotlib.markers
+# pos 1 de la lista es el descriptor de color (acepta caracteres con colores predefinidos)
+# , colores HTML, escala de grises (num. entre 0 y 1)
+# http://matplotlib.org/1.4.1/api/colors_api.html
+# markersRaw=[['o'],[(4,0,0),'k'],['^'],[(7,2,0)],[(3,0,0),'k']]
+
+# ## Prepare markers (for each workload)
+# markerSpecs={}
+# marker_cnt=0
+# nr_markers=len(markersRaw)
+# for wname in selectedWorkloads:
+#     markerSpecs[wname] = markersRaw[marker_cnt%nr_markers]
+#     marker_cnt = marker_cnt + 1
+
+
+fsize=16
+rcParams['font.family'] = 'Helvetica'
+rcParams['xtick.labelsize'] = fsize
+rcParams['ytick.labelsize'] = fsize
+rcParams['legend.fontsize'] = fsize
+rcParams['grid.linewidth']= 1.0
+
+figSize=[10.0,20.0]
+scatter2DTrends(data,"Unfairness","Relative EDP",0,figSize,filename="edp-trends.pdf",windowTitle="EDP",legendLocation='upper right',axes_labelsize=fsize,label_offset=(10,5))
+
+#Uncomment to display the chart windows
+plt.show()
+
+
 
