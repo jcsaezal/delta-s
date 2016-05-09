@@ -70,7 +70,7 @@ def scatter2DTrends(labeledPointsSched,xlabel,ylabel,figSize=[9.0,9.0],filename=
         #    extraArgs=dict(facecolor=markerSpec[1])
         #else:
         #    extraArgs=dict()
-        plt.plot(X, Y, markersize=10, linestyle='dashed')  #markerSpec[0])##'--o')
+        plt.plot(X, Y, marker=(3,0,0), markersize=10, linestyle='dashed')  #markerSpec[0])##'--o')
 
     plt.legend(loc=legendLocation) # scatterpoints=1)
     plt.grid(True)
@@ -176,9 +176,9 @@ for i in range(len(results)):
     curve=results[i]
     name=str(i)
     data[name]=[]
-    for val in curve:
-        x=temps[i]
-        y=val
+    for j in range(len(curve)):
+        x=temps[j]
+        y=curve[j]
         z=i ## Rango
         data[name].append(LabeledPoint("nada",x,y,z))
              
@@ -207,8 +207,8 @@ rcParams['ytick.labelsize'] = fsize
 rcParams['legend.fontsize'] = fsize
 rcParams['grid.linewidth']= 1.0
 
-figSize=[10.0,20.0]
-scatter2DTrends(data,"Unfairness","Relative EDP",0,figSize,filename="edp-trends.pdf",windowTitle="EDP",legendLocation='upper right',axes_labelsize=fsize,label_offset=(10,5))
+figSize=[10.0,9.0]
+scatter2DTrends(data,"T(K)","DeltaS",figSize,filename="figure.pdf",windowTitle="EDP",legendLocation='upper right',axes_labelsize=fsize,label_offset=(10,5))
 
 #Uncomment to display the chart windows
 plt.show()
