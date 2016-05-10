@@ -107,7 +107,7 @@ def parseInputCSV(filename,nfields):
                     return None
                 ## Valid row
                 temperature=float(row[0])
-                field=float(row[1])
+                field=float(row[1])/10000.0 ## DIVIDIR ENTRE 10000 > 1T = 10000 Oe
                 magnetization=float(row[2])
 
                 ## Detect new temperature
@@ -149,6 +149,9 @@ def delta_s(max_h_idx,temps,fields,samples,min_h_idx=0):
             (tB,hB,mB)=samples[t+1][h+1]
             incr=((mB-mA)/(tB-tA))*(hB-hA)
             val=val+incr
+        #(tA,hA,mA)=samples[t][min_h_idx]
+        #(tB,hB,mB)=samples[t+1][max_h_idx]
+        #val=((mB-mA)/(tB-tA))*(hB-hA)
         values.append(val)
     return values
 
@@ -164,7 +167,9 @@ if ret==None:
 
 ## Una curva por cada incremento
 results=[]
+#for i in range(2,4):
 for i in range(2,nfields+1):
+#for i in range(1,nfields-1):
     ret=delta_s(i,temps,fields,samples)
     results.append(ret)
 
