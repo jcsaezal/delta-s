@@ -138,25 +138,32 @@ def parseInputCSV(filename,nfields):
     return (temperatures,fields,increment_h_matrix)
 
 
-def delta_s(max_h_idx,temps,fields,samples,min_h_idx=0):
+def delta_s(max_h_idx,temps,fields,samples,mass,min_h_idx=0):
     values=[]
 
     ## 
-    for t in range(0,len(temps)-1):
-        val=0.0
-        for h in range(min_h_idx,max_h_idx-1):
-            (tA,hA,mA)=samples[t][h]
-            (tB,hB,mB)=samples[t+1][h+1]
-            incr=((mB-mA)/(tB-tA))*(hB-hA)
-            val=val+incr
-        #(tA,hA,mA)=samples[t][min_h_idx]
-        #(tB,hB,mB)=samples[t+1][max_h_idx]
-        #val=((mB-mA)/(tB-tA))*(hB-hA)
+    for i in range(0,len(temps)-1):
+        sum1=0.0
+        for j in range(min_h_idx,max_h_idx-1):
+            (tA,hA,mA)=samples[i][j]
+            (tB,hB,mB)=samples[i][j+1]
+            #Suma1=Suma1+0.5*(M(i,j+1)+M(i,j))*(B(i,j+1)-B(i,j))
+            incr=(mB+mA)*(hB-hA)
+            sum1=sum1+0.5*incr
+        sum2=0.0
+        for j in range(min_h_idx,max_h_idx-1):
+            (tA,hA,mA)=samples[i+1][j]
+            (tB,hB,mB)=samples[i+1][j+1]
+            #Suma2=Suma2+0.5*(M(i+1,j+1)+M(i+1,j))*(B(i+1,j+1)-B(i+1,j))
+            incr=(mB+mA)*(hB-hA)
+            sum2=sum2+0.5*incr                                
+        #DST(k)= -(Suma2-Suma1)/(T(i+1)-T(i))/rmasa
+        val=-((sum2-sum1)/(temps[i+1]-temps[i]))/mass
         values.append(val)
     return values
 
 nfields=int(sys.argv[2])
-
+mass=float(sys.argv[3])
 ret=parseInputCSV(sys.argv[1],nfields)
 
 if ret==None:
@@ -170,7 +177,7 @@ results=[]
 #for i in range(2,4):
 for i in range(2,nfields+1):
 #for i in range(1,nfields-1):
-    ret=delta_s(i,temps,fields,samples)
+    ret=delta_s(i,temps,fields,samples,mass)
     results.append(ret)
 
 
