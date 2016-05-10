@@ -43,7 +43,7 @@ def mean(numbers):
         val = val+ n
     return (val/len(numbers))    
 
-def scatter2DTrends(labeledPointsSched,xlabel,ylabel,figSize=[9.0,9.0],filename=None,windowTitle=None,legendLocation='best',axes_labelsize=None,label_offset=(37,5)):
+def scatter2DTrends(labeledPointsSched,series,xlabel,ylabel,figSize=[9.0,9.0],filename=None,windowTitle=None,legendLocation='best',axes_labelsize=None,label_offset=(37,5)):
     plt.rcParams["figure.figsize"]=figSize
     offsetx=label_offset[0]
     offsety=label_offset[1]
@@ -60,8 +60,8 @@ def scatter2DTrends(labeledPointsSched,xlabel,ylabel,figSize=[9.0,9.0],filename=
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
 
-    for sched in labeledPointsSched.keys():
-        schedPoints=labeledPointsSched[sched]
+    for serie in series:
+        schedPoints=labeledPointsSched[serie]
         (Labels,X,Y,Z)=buildArrays(schedPoints)
 
         ## Hack para reconocer el color
@@ -70,7 +70,7 @@ def scatter2DTrends(labeledPointsSched,xlabel,ylabel,figSize=[9.0,9.0],filename=
         #    extraArgs=dict(facecolor=markerSpec[1])
         #else:
         #    extraArgs=dict()
-        plt.plot(X, Y, marker=(3,0,0), markersize=10, linestyle='dashed')  #markerSpec[0])##'--o')
+        plt.plot(X, Y, label=serie, marker=(3,0,0), markersize=10, linestyle='dashed')  #markerSpec[0])##'--o')
 
     plt.legend(loc=legendLocation) # scatterpoints=1)
     plt.grid(True)
@@ -133,7 +133,7 @@ def parseInputCSV(filename,nfields):
     ## Calculate average for fields
     fields=[]
     for field_vs in mfields:
-        fields.append(round(mean(field_vs),0))
+        fields.append(mean(field_vs))
 
     return (temperatures,fields,increment_h_matrix)
 
@@ -183,16 +183,19 @@ for i in range(2,nfields+1):
 
 
 data={}
-
+series=[]
 for i in range(len(results)):
     curve=results[i]
-    name=str(i)
+    name="H=%.2f T" % fields[i+1] # "H=%i" % i
     data[name]=[]
+    series.append(name)
     for j in range(len(curve)):
         x=temps[j]
         y=curve[j]
         z=i ## Rango
-        data[name].append(LabeledPoint("nada",x,y,z))
+        data[name].append(LabeledPoint(name,x,y,z))
+
+series.reverse()
              
 # Formato: Lista de listas
 # en cada lista -> pos 0 es el tipo de marker
@@ -213,14 +216,15 @@ for i in range(len(results)):
 
 
 fsize=16
-rcParams['font.family'] = 'Helvetica'
+rcParams['font.family'] = 'Arial'
 rcParams['xtick.labelsize'] = fsize
 rcParams['ytick.labelsize'] = fsize
 rcParams['legend.fontsize'] = fsize
 rcParams['grid.linewidth']= 1.0
+#rcParams['text.usetex']= 1
 
 figSize=[10.0,9.0]
-scatter2DTrends(data,"T(K)","DeltaS",figSize,filename="figure.pdf",windowTitle="EDP",legendLocation='upper right',axes_labelsize=fsize,label_offset=(10,5))
+scatter2DTrends(data,series,r'$T(K)$',r'$\Delta S$',figSize,filename="figure.pdf",windowTitle="EDP",legendLocation='upper right',axes_labelsize=fsize,label_offset=(10,5))
 
 #Uncomment to display the chart windows
 plt.show()
