@@ -255,6 +255,8 @@ if len(sys.argv)==5:
     basename, file_extension = os.path.splitext(output_file)
     if file_extension=='.csv' or file_extension=='.dat':
         csv_format=True
+    else:
+        csv_format=False
 else:
     output_file="%s_out%s" % (basename,file_extension)
 
