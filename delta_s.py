@@ -1,10 +1,13 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import csv
 import sys
 import matplotlib 
 import matplotlib.pyplot as plt
 from matplotlib.markers import *
 from math import *
+import pandas as pd
+import numpy as np
+import os
 
 class LabeledPoint:
     def __init__(self, label, x, y, z=0):
@@ -43,7 +46,7 @@ def mean(numbers):
         val = val+ n
     return (val/len(numbers))    
 
-def scatter2DTrends(labeledPointsSched,series,xlabel,ylabel,figSize=[9.0,9.0],filename=None,windowTitle=None,legendLocation='best',axes_labelsize=None,label_offset=(37,5)):
+def scatter2DTrends(labeledPointsSched,series,xlabel,ylabel,figSize=[9.0,9.0],filename=None,windowTitle=None,axes_labelsize=None,label_offset=(37,5)):
     plt.rcParams["figure.figsize"]=figSize
     offsetx=label_offset[0]
     offsety=label_offset[1]
@@ -72,13 +75,70 @@ def scatter2DTrends(labeledPointsSched,series,xlabel,ylabel,figSize=[9.0,9.0],fi
         #    extraArgs=dict()
         plt.plot(X, Y, label=serie, marker=(3,0,0), markersize=10, linestyle='dashed')  #markerSpec[0])##'--o')
 
-    plt.legend(loc=legendLocation) # scatterpoints=1)
+    lgd=plt.legend(loc='upper left', bbox_to_anchor=(1.02, 1), borderaxespad=0)
+
     plt.grid(True)
+    
     plt.draw()
+
     if filename!=None:
-        plt.savefig(filename)
+        plt.savefig(filename,bbox_extra_artists=(lgd,), bbox_inches='tight')
     return 0
 
+
+def parseInputExcel(filename,nfields):
+    table=pd.read_excel(filename) 
+    rows=table.values
+    temperatures=[]
+    increment_h_matrix=[] ## For each t,h value -> M (Magnetizacion) -> Estaria bien guardar tupla entera
+    
+    ## Lista de listas para guardar muestras correspondientes al mismo mfield (para media)
+    mfields=[]
+    for i in range(nfields):
+        mfields.append([])
+
+    field_cnt=0 ## Modular counter 0..nfields-1
+    temp_cnt=0 ## The number of temperatures used is unkown at the beginning
+    ## Assume one temperature value (at least)
+    samples_same_temp=[]    
+    increment_h_matrix.append(samples_same_temp)
+    acum_temp=0.0
+
+    for row in rows:
+        if len(row)<3:
+            print "Not enough columns"
+            return None
+        ## Valid row
+        temperature=row[0]
+        field=row[1]/10000.0 ## DIVIDIR ENTRE 10000 > 1T = 10000 Oe
+        magnetization=row[2]
+
+        ## Detect new temperature
+        if field_cnt == nfields:
+            temp_cnt=temp_cnt+1
+            field_cnt=0
+            ## Temperatura media
+            temperatures.append(round(acum_temp/float(nfields),0))
+            acum_temp=0.0
+            samples_same_temp=[]    
+            increment_h_matrix.append(samples_same_temp)
+
+        ## Add new sample (tuple)  
+        samples_same_temp.append((temperature,field,magnetization))
+        acum_temp=acum_temp+temperature
+        mfields[field_cnt].append(field)
+        field_cnt=field_cnt+1
+
+    
+    ## Add last temperature average    
+    temperatures.append(round(acum_temp/float(nfields),0))
+
+    ## Calculate average for fields
+    fields=[]
+    for field_vs in mfields:
+        fields.append(mean(field_vs))
+
+    return (temperatures,fields,increment_h_matrix)
 
 def parseInputCSV(filename,nfields):
     temperatures=[]
@@ -162,9 +222,43 @@ def delta_s(max_h_idx,temps,fields,samples,mass,min_h_idx=0):
         values.append(val)
     return values
 
+if len(sys.argv)<4 or len(sys.argv)>5:
+    print "Usage: %s <data_file> <nfield_values> <mass> [output_file]"
+    exit(0)
+
+
+input_file=sys.argv[1]
 nfields=int(sys.argv[2])
 mass=float(sys.argv[3])
-ret=parseInputCSV(sys.argv[1],nfields)
+
+
+if len(sys.argv)==5:
+    output_file=sys.argv[4]
+
+basename, file_extension = os.path.splitext(input_file)
+pdf_file="%s.pdf" % basename
+
+## Start processing
+if file_extension=='.csv' or file_extension=='.dat':
+    ret=parseInputCSV(sys.argv[1],nfields)
+    csv_format=True
+elif file_extension=='.xls' or file_extension=='.xlsx':
+    ret=parseInputExcel(sys.argv[1],nfields)
+    csv_format=False
+else:
+    print "Unrecognized file extension: %s" % (file_extension)
+    exit(1)
+
+## Build output file name if necessary
+if len(sys.argv)==5:
+    output_file=sys.argv[4]
+    basename, file_extension = os.path.splitext(output_file)
+    if file_extension=='.csv' or file_extension=='.dat':
+        csv_format=True
+else:
+    output_file="%s_out%s" % (basename,file_extension)
+
+
 
 if ret==None:
     exit(1)
@@ -181,6 +275,10 @@ for i in range(2,nfields+1):
     results.append(ret)
 
 
+## Prepare unitary rows (one row per temperature (minus one) -> last temperature does not apply )
+output_rows=[] ## To generate output panda table
+for i in range(len(temps)-1):
+    output_rows.append([temps[i]]) # (Temperature field)
 
 data={}
 series=[]
@@ -194,6 +292,10 @@ for i in range(len(results)):
         y=curve[j]
         z=i ## Rango
         data[name].append(LabeledPoint(name,x,y,z))
+        ## Fill corresponding value
+        output_rows[j].append(curve[j])
+
+header=list(series)
 
 series.reverse()
              
@@ -223,11 +325,20 @@ rcParams['legend.fontsize'] = fsize
 rcParams['grid.linewidth']= 1.0
 #rcParams['text.usetex']= 1
 
-figSize=[10.0,9.0]
-scatter2DTrends(data,series,r'$T(K)$',r'$\Delta S$',figSize,filename="figure.pdf",windowTitle="EDP",legendLocation='upper right',axes_labelsize=fsize,label_offset=(10,5))
+figSize=[8.0,7.0]
+scatter2DTrends(data,series,r'$T(K)$',r'$\Delta S$',figSize,filename=pdf_file,windowTitle="DeltaS",axes_labelsize=fsize,label_offset=(10,5))
 
 #Uncomment to display the chart windows
-plt.show()
+#plt.show()
+
+##Generate output panda table
+nparray=np.array(output_rows)
+outputTable=pd.DataFrame(nparray)
+header.insert(0,"Temp (K)")
+if csv_format:
+    outputTable.to_csv(output_file,header=header,index=False,sep=',',encoding='utf-8')
+else:
+    outputTable.to_excel(output_file,header=header,index=False)
 
 
 
