@@ -37,7 +37,7 @@
 # Usage
 
 	$ ./delta_s.py 
-	Usage: %s <data_file> <nfield_values> <mass> [output_file]
+	Usage: ./delta_s <data_file> <nfield_values> <mass> [output_file]
 	
 * `data_file`: Input file in CSV or Excel format (.xls or .xlsx)
 	- The file must contain a table with three columns: Temp(K), Magnetic Field (in Oe), and Magnetization
