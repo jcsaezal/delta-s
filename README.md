@@ -21,8 +21,8 @@
 
 ## Mac OS X
 
-1. Install Mac Ports
-2. Install the python interpreter (v2.7) that comes with Mac Ports and set this interpreter as the default one. Don't forget to install the required python packages as well.
+1. Install MacPorts
+2. Install the python interpreter (v2.7) that comes with MacPorts and set this interpreter as the default one. Don't forget to install the required python packages as well.
 
 		## Install python + additional packages
 		$ sudo port install py27-matplotlib py27-numpy py27-pandas py27-xlrd py27-xlwt
