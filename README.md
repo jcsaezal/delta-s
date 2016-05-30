@@ -9,6 +9,7 @@
 	- pandas
 	- xlwr
 	- xlrd
+	- openpyxl
 
 ## Windows
 
@@ -16,7 +17,7 @@
 	- Make sure the directory of the conda binary and that of the python interpreter that comes with conda are added to the PATH. The installer will let you do that.
 2. Open a command-line window (`cmd`) and install the necessary libraries by typing the following command:
 
-		conda install matplotlib pandas xlrd xlwt
+		conda install matplotlib pandas xlrd xlwt openpyxl
 	
 
 ## Mac OS X
@@ -25,7 +26,7 @@
 2. Install the python interpreter (v2.7) that comes with MacPorts and set this interpreter as the default one. Don't forget to install the required python packages as well.
 
 		## Install python + additional packages
-		$ sudo port install py27-matplotlib py27-numpy py27-pandas py27-xlrd py27-xlwt
+		$ sudo port install py27-matplotlib py27-numpy py27-pandas py27-xlrd py27-xlwt py27-openpyxl
 		
 		## Select MacPorts Python27 interpreter by default
 		$ sudo port select --set python python27
