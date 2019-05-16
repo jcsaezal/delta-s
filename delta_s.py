@@ -223,7 +223,7 @@ def delta_s(max_h_idx,temps,fields,samples,mass,min_h_idx=0):
     return values
 
 if len(sys.argv)<4 or len(sys.argv)>5:
-    print "Usage: %s <data_file> <nfield_values> <mass> [output_file]"
+    print "Usage: %s <data_file> <nfield_values> <mass> [output_file]" % sys.argv[0]
     sys.exit(0)
 
 
