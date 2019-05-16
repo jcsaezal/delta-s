@@ -50,3 +50,8 @@
 ## Example		
 
 	$ ./delta_s.py example.xls 15 0.05 results.xls
+
+<!--
+To create an executable file for Windows
+pyinstaller --additional-hooks-dir=. --onefile delta_s.py
+-->	

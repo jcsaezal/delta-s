@@ -224,7 +224,7 @@ def delta_s(max_h_idx,temps,fields,samples,mass,min_h_idx=0):
 
 if len(sys.argv)<4 or len(sys.argv)>5:
     print "Usage: %s <data_file> <nfield_values> <mass> [output_file]"
-    exit(0)
+    sys.exit(0)
 
 
 input_file=sys.argv[1]
@@ -247,7 +247,7 @@ elif file_extension=='.xls' or file_extension=='.xlsx':
     csv_format=False
 else:
     print "Unrecognized file extension: %s" % (file_extension)
-    exit(1)
+    sys.exit(1)
 
 ## Build output file name if necessary
 if len(sys.argv)==5:
@@ -263,7 +263,7 @@ else:
 
 
 if ret==None:
-    exit(1)
+    sys.exit(1)
 
 ##Recuperar componentes individuales de las tuplas
 (temps,fields,samples)=ret
